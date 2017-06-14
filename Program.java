@@ -22,6 +22,7 @@ public class Program
 			processes.add(new Proc(MAX_PROC_RESOURCES - rand.nextInt(3)));
 		// Initialize to a new proc, with some small range for its max
 		int totalHeldResources = 0;// TODO added var
+		
 		// Run the simulation:
 		for (int i = 0; i < ITERATIONS; i++)
 		{
@@ -41,32 +42,39 @@ public class Program
 				// output to the console
 				// this indicates what the request is, and whether or not its
 				// granted.
-				if (currRequest < 0)
+				boolean found = false;
+				boolean safe = false;
+				boolean unsafe = false;
+				for (int k = 0; k < processes.size(); k++)
 				{
-					totalHeldResources += currRequest;// subtract the resources
-														// that have been given
-														// up
-				} else
-				{
-					if (currRequest > TOTAL_RESOURCES - totalHeldResources)
+					if (processes.get(k).getMaxResources()
+							- processes.get(k).getHeldResources() <= (TOTAL_RESOURCES - totalHeldResources))
 					{
-						System.out.println(currRequest + " resources not allocated to process " + j
-								+ ", request denied because of insufficient resources.");
+						// it gets what it needs and terminates
+						// check remaining processes
+						found = true;
 					}
-					
-					if (processes.get(j).getMaxResources() - processes.get(j).getHeldResources() <= TOTAL_RESOURCES
-							- totalHeldResources)
+					if (!found)
 					{
-						totalHeldResources += currRequest;
-						processes.get(j).addResources(currRequest);
-						System.out.println(
-								currRequest + " resources allocated to process " + j + ", safe state ensured.");
-					} else
-					{
-						System.out.println(
-								currRequest + " resources not allocated to process " + j + ", unsafe state avoided.");
+						unsafe = true;
 					}
 				}
+				
+				if (!unsafe)
+				{
+					safe = true;
+				}
+				if (safe)
+				{
+					totalHeldResources += currRequest;
+					processes.get(j).addResources(currRequest);
+					System.out.println(currRequest + " resources allocated to process " + j + ", safe state ensured.");
+				} else
+				{
+					System.out.println(
+							currRequest + " resources not allocated to process " + j + ", unsafe state avoided.");
+				}
+				
 				// At the end of each iteration, give a summary of the current
 				// status:
 				System.out.println("\n***** STATUS *****");
